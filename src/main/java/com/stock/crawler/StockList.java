@@ -33,13 +33,14 @@ import java.util.List;
 public class StockList {
     private static final Logger logger = Logger.getLogger(StockList.class);
     public static void main(String[] args) {
-        String methodName = args.length > 0 ? args[0] : "crawlerStockDetailList";
+        String methodName = args.length > 0 ? args[0] : "crawlerStockTradeList";
         try {
             Method method = StockList.class.getMethod(methodName);
             DateTime current = DateTime.now();
             if(current.getDayOfWeek() > 0 && current.getDayOfWeek() < 6
                     && current.getHourOfDay() >= 9 && current.getHourOfDay() < 15) {
                 method.invoke(null);
+                StockList.crawlerStockDetailList();
             }
             System.exit(0);
         } catch (NoSuchMethodException e) {
@@ -47,6 +48,8 @@ public class StockList {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -124,7 +127,7 @@ public class StockList {
                 if(crawlerTime.isAfter(DateTime.parse(currenDate + " 09:25:00", formatter))
                         && crawlerTime.isBefore(DateTime.parse(currenDate + " 15:00:00", formatter))
                         && crawlerTime.getDayOfWeek() > 0 && crawlerTime.getDayOfWeek() < 6) {
-                    logger.info(line + "\ttrade");
+                    logger.info(line + "\t" + crawlerTime.toString(formatter) + "\ttrade");
                     System.out.println(line);
                 } else {
                     System.exit(0);
