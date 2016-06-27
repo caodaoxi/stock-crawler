@@ -2,9 +2,11 @@ package com.stock.crawler.utils;
 
 import com.stock.crawler.KDJ;
 import com.stock.crawler.config.Configuration;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
@@ -111,6 +113,7 @@ public class QuotaUtils {
         return Math.rint((total/n)*1000)/1000;
     }
     public List<JSONObject> loadAllQuoteSymbol() {
+
         Document doc = null;
         List<JSONObject> allQuotes = new ArrayList<JSONObject>();
         JSONObject jsonObject = new JSONObject();
@@ -127,13 +130,34 @@ public class QuotaUtils {
         allQuotes.add(jsonObject);
         int count = 1;
         while (count < 100) {
-            String paraVal = "[['hq','hs_a','',0," + count + ",500]]";
+            String paraVal = "[[\"hq\",\"hs_a\",\"\",0," + count + ",500]]";
             try {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("__s", paraVal);
                 doc = Jsoup.connect(allQuotesUrl).data(params).ignoreContentType(true).timeout(10000).get();
                 Elements elements = doc.select("body");
-                System.out.println(elements.toString());
+                Element element = elements.get(0);
+                String body = element.text();
+                JSONArray jsonArray = new JSONArray(body);
+                JSONObject json = (JSONObject) jsonArray.get(0);
+                String day = json.get("day").toString();
+                JSONArray fields = (JSONArray) json.get("fields");
+                JSONArray items = (JSONArray) json.get("items");
+                for(Object item : items) {
+                    JSONArray itemArray = (JSONArray) item;
+                    JSONObject js = new JSONObject();
+                    for(int i = 0; i < fields.length(); i++) {
+                        js.put(fields.get(i).toString(), itemArray.get(i));
+
+                    }
+                    String code = js.getString("symbol");
+                    if(code.indexOf("sh") != -1) {
+                        js.put("symbol", code.substring(2) + ".SS");
+                    } else if(code.indexOf("sz") != -1) {
+                        js.put("symbol", code.substring(2) + ".SZ");
+                    }
+                    allQuotes.add(js);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -142,24 +166,49 @@ public class QuotaUtils {
         return null;
     }
 
+
+    public List<JSONObject> loadQuoteData(List<JSONObject> quotes, String startDate, String endDate) {
+        Document doc = null;
+        for(JSONObject quote : quotes) {
+            String yquery = "select * from yahoo.finance.historicaldata where symbol = \"" + quote.getString("symbol").toLowerCase() + "\" and startDate = \"" + startDate + "\" and endDate = \"" + endDate + "\"";
+            Map<String, String> params = new HashMap<String, String>();
+            params.put("q", yquery);
+            params.put("format", "json");
+            params.put("env", "http://datatables.org/alltables.env");
+            try {
+                doc = Jsoup.connect(yqlUrl).data(params).ignoreContentType(true).timeout(10000).get();
+                Elements elements = doc.select("body");
+                Element element = elements.get(0);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return null;
+    }
     public static void main(String[] args) {
         QuotaUtils quotaUtils = new QuotaUtils();
-        Connection con = null;
-        try {
-            Configuration.config();
-            DBPoolContext.getInstance().init(Configuration.JDBCURL, Configuration.JDBCPASSWORD, Configuration.JDBCUSERNAME);
-            con = DBPoolContext.getInstance().open();
-            List<JSONObject> quotes = DBUtils.getQuoteByStockId("600053", 100, con);
-            KDJ kdj = new KDJ();
-            kdj.getKDJ(quotes);
-            for (JSONObject quote : quotes) {
-                System.out.println(quote.toString());
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            DBUtils.close(con);
-        }
-//        quotaUtils.loadAllQuoteSymbol();
+//        Connection con = null;
+//        try {
+//            Configuration.config();
+//            DBPoolContext.getInstance().init(Configuration.JDBCURL, Configuration.JDBCPASSWORD, Configuration.JDBCUSERNAME);
+//            con = DBPoolContext.getInstance().open();
+//            List<JSONObject> quotes = DBUtils.getQuoteByStockId("600053", 100, con);
+//            KDJ kdj = new KDJ();
+//            kdj.getKDJ(quotes);
+//            for (JSONObject quote : quotes) {
+//                System.out.println(quote.toString());
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        } finally {
+//            DBUtils.close(con);
+//        }
+        List<JSONObject> quotes = quotaUtils.loadAllQuoteSymbol();
+//        List<JSONObject> quotes = new ArrayList<JSONObject>();
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("symbol", "600030.SS");
+//        quotes.add(jsonObject);
+//        quotaUtils.loadQuoteData(quotes, "2015-03-01", "2016-06-17");
     }
 }
