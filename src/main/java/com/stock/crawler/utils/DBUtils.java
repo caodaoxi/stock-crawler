@@ -238,5 +238,24 @@ public class DBUtils {
 			e.printStackTrace();
 		}
 	}
+
+
+	public static void updateCCI(List<JSONObject> jsonObjects, Connection con) {
+		if(jsonObjects.size() == 0) return;
+		try {
+			Statement st = con.createStatement();
+			String sql = null;
+			//			for (JSONObject jsonObject : jsonObjects) {
+//				sql = "update quote set ma5=" + jsonObject.getDouble("MA_5") + ", ma10=" + jsonObject.getDouble("MA_10") + ", ma20=" + jsonObject.getDouble("MA_20")  + ", m30=" + jsonObject.getDouble("MA_30")  + ", ma60=" + jsonObject.getDouble("MA_60") + ", ma120=" + jsonObject.getDouble("120")  + " where stockId='" + jsonObject.getString("stockId") + "' and tradeDate='" + jsonObject.getString("tradeDate") + "'";
+//				st.addBatch(sql);
+//			}
+			JSONObject jsonObject = jsonObjects.get(jsonObjects.size() - 1);
+			sql = "update quote set cci=" + jsonObject.getDouble("cci") + " where stockId='" + jsonObject.getString("stockId") + "' and tradeDate='" + jsonObject.getString("tradeDate") + "'";
+			st.addBatch(sql);
+			st.executeBatch();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 }
 
