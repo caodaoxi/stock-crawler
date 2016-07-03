@@ -114,7 +114,7 @@ public class DBUtils {
 	}
 
 	public static List<Double> getClosePrice(String stockId, int count, Connection con) {
-		String sql = "select closePrice from quote where stockId=? and volume > 0 order by tradeDate limit 100000000";
+		String sql = "select closePrice from quote where stockId=? and volume > 0 and tradeDate<='2016-06-30'order by tradeDate limit 100000000";
 		PreparedStatement ps = null;
 		ArrayList<Double> prices = null;
 
@@ -172,7 +172,7 @@ public class DBUtils {
 
 
 	public static void updateMACD(Map<String, Double> macdMap, String stockId, String dateStr, Connection con){
-		String sql = "update quote set dif=" + macdMap.get("DIF") + ", dea=" + macdMap.get("DEA") + ", macd=" + macdMap.get("MACD") + " where stockId='" + stockId + "' and tradeDate='" + dateStr + "'";
+		String sql = "update quote set dif=" + macdMap.get("DIF") + ", dea=" + macdMap.get("DEA") + ", macd=" + macdMap.get("MACD") + ", ema12=" + macdMap.get("EMA12") + ", ema26=" + macdMap.get("EMA26") + " where stockId='" + stockId + "' and tradeDate='" + dateStr + "'";
 		try {
 			PreparedStatement ps = con.prepareStatement(sql);
 			ps.executeUpdate();
@@ -245,11 +245,21 @@ public class DBUtils {
 		try {
 			Statement st = con.createStatement();
 			String sql = null;
-			//			for (JSONObject jsonObject : jsonObjects) {
-//				sql = "update quote set ma5=" + jsonObject.getDouble("MA_5") + ", ma10=" + jsonObject.getDouble("MA_10") + ", ma20=" + jsonObject.getDouble("MA_20")  + ", m30=" + jsonObject.getDouble("MA_30")  + ", ma60=" + jsonObject.getDouble("MA_60") + ", ma120=" + jsonObject.getDouble("120")  + " where stockId='" + jsonObject.getString("stockId") + "' and tradeDate='" + jsonObject.getString("tradeDate") + "'";
+//			for (JSONObject jsonObject : jsonObjects) {
+//				sql = "update quote set cci=" + jsonObject.getDouble("cci") + " where stockId='" + jsonObject.getString("stockId") + "' and tradeDate='" + jsonObject.getString("tradeDate") + "'";
 //				st.addBatch(sql);
 //			}
+//			int c = 0;
+//			for (int i = jsonObjects.size() -1; i> 0; i--) {
+//				if(c>10) break;
+//				JSONObject jsonObject = jsonObjects.get(i);
+//				if(!jsonObject.has("cci")) continue;
+//				sql = "update quote set cci=" + jsonObject.getDouble("cci") + " where stockId='" + jsonObject.getString("stockId") + "' and tradeDate='" + jsonObject.getString("tradeDate") + "'";
+//				st.addBatch(sql);
+//				c++;
+//			}
 			JSONObject jsonObject = jsonObjects.get(jsonObjects.size() - 1);
+			if(!jsonObject.has("cci")) jsonObject.put("cci", -1000);
 			sql = "update quote set cci=" + jsonObject.getDouble("cci") + " where stockId='" + jsonObject.getString("stockId") + "' and tradeDate='" + jsonObject.getString("tradeDate") + "'";
 			st.addBatch(sql);
 			st.executeBatch();
