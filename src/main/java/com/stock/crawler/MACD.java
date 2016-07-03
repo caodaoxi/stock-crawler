@@ -58,6 +58,8 @@ public class MACD {
         dea = MACD.getEXPMA(diffList, midPeriod);
         macdData.put("DIF", dif);
         macdData.put("DEA", dea);
+        macdData.put("EMA12", shortEMA);
+        macdData.put("EMA26", longEMA);
         macdData.put("MACD", (dif - dea) * 2);
         return macdData;
     }
