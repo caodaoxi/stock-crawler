@@ -88,9 +88,10 @@ public class MACD {
         String stockId = quote.getString("stockId");
         JSONObject yestodayQuote = quotes.get(stockId);
         if (yestodayQuote == null) {
-            yestodayQuote = DBUtils.getLatestQuoteByStockId(stockId, 1, con);
+            yestodayQuote = DBUtils.getLatestQuoteByStockId(stockId, 1, con).get(0);
             quotes.put(stockId, quote);
         }
+        if (yestodayQuote == null) return;
 
         double ema12 = (yestodayQuote.getDouble("ema12")*11)/13 + (quote.getDouble("closePrice")*2)/13;
         double ema26 = (yestodayQuote.getDouble("ema26")*25)/27 + (quote.getDouble("closePrice")*2)/27;

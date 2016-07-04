@@ -1,16 +1,32 @@
 package com.stock.crawler;
 
 
+import com.stock.crawler.utils.DBUtils;
 import org.json.JSONObject;
 
+import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by caodaoxi on 16-6-18.
  */
 public class KDJ {
 
+    private Connection con = null;
+
+
+    private Map<String, List<JSONObject>> quotes= new HashMap<String, List<JSONObject>>();
+
+    public KDJ() {
+
+    }
+
+    public KDJ(Connection con) {
+        this.con = con;
+    }
     public void getKDJ(List<JSONObject> quoteData) {
         if(quoteData.size() > 12) {
             List<Double> rsv = getRSV(quoteData);
@@ -110,4 +126,31 @@ public class KDJ {
         return total/length;
     }
 
+    public JSONObject getTodayKDJ(JSONObject quote) {
+        String stockId = quote.getString("stockId");
+
+        List<JSONObject> yestodayQuotes = quotes.get(stockId);
+
+        if (yestodayQuotes == null) {
+
+            yestodayQuotes = DBUtils.getLatestQuoteByStockId(stockId, 12, con);
+            quotes.put(stockId, yestodayQuotes);
+        }
+        if (yestodayQuotes == null || yestodayQuotes.size() == 0) return null;
+        yestodayQuotes.add(quote);
+        getKDJ(yestodayQuotes);
+        return yestodayQuotes.remove(yestodayQuotes.size() - 1);
+
+//
+//        double ema12 = (yestodayQuote.getDouble("ema12")*11)/13 + (quote.getDouble("closePrice")*2)/13;
+//        double ema26 = (yestodayQuote.getDouble("ema26")*25)/27 + (quote.getDouble("closePrice")*2)/27;
+//        double dif = ema12 - ema26;
+//        double dea = (yestodayQuote.getDouble("dea")*8)/10 + (dif*2)/10;
+//        double macd = 2 * (dif - dea);
+//        quote.put("DIF", dif);
+//        quote.put("DEA", dea);
+//        quote.put("EMA12", ema12);
+//        quote.put("EMA26", ema26);
+//        quote.put("MACD", macd);
+    }
 }
