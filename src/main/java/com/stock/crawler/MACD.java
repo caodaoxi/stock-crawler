@@ -1,13 +1,33 @@
 package com.stock.crawler;
 
+import com.stock.crawler.utils.DBUtils;
+import org.joda.time.DateTime;
+import org.json.JSONObject;
+
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by caodaoxi on 16-6-19.
  */
 public class MACD {
+
+    private Connection con = null;
+
+
+    private Map<String, JSONObject> quotes= new HashMap<String, JSONObject>();
+
+    public MACD() {
+
+    }
+
+    public MACD(Connection con) {
+        this.con = con;
+    }
+
 
     /**
      * Calculate EMA,
@@ -63,4 +83,25 @@ public class MACD {
         macdData.put("MACD", (dif - dea) * 2);
         return macdData;
     }
+
+    public void getTodayMACD(JSONObject quote) {
+        String stockId = quote.getString("stockId");
+        JSONObject yestodayQuote = quotes.get(stockId);
+        if (yestodayQuote == null) {
+            yestodayQuote = DBUtils.getLatestQuoteByStockId(stockId, 1, con);
+            quotes.put(stockId, quote);
+        }
+
+        double ema12 = (yestodayQuote.getDouble("ema12")*11)/13 + (quote.getDouble("closePrice")*2)/13;
+        double ema26 = (yestodayQuote.getDouble("ema26")*25)/27 + (quote.getDouble("closePrice")*2)/27;
+        double dif = ema12 - ema26;
+        double dea = (yestodayQuote.getDouble("dea")*8)/10 + (dif*2)/10;
+        double macd = 2 * (dif - dea);
+        quote.put("DIF", dif);
+        quote.put("DEA", dea);
+        quote.put("EMA12", ema12);
+        quote.put("EMA26", ema26);
+        quote.put("MACD", macd);
+    }
+
 }
