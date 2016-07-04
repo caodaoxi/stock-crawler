@@ -114,7 +114,7 @@ public class DBUtils {
 	}
 
 	public static List<Double> getClosePrice(String stockId, int count, Connection con) {
-		String sql = "select closePrice from quote where stockId=? and volume > 0 and tradeDate<='2016-06-30'order by tradeDate limit 100000000";
+		String sql = "select closePrice from quote where stockId=? and volume > 0 and tradeDate<='2016-06-30' order by tradeDate limit 100000000";
 		PreparedStatement ps = null;
 		ArrayList<Double> prices = null;
 
@@ -157,17 +157,68 @@ public class DBUtils {
 				jsonObject.put("addRate", rs.getDouble("addRate"));
 				jsonObject.put("minPrice", rs.getDouble("minPrice"));
 				jsonObject.put("maxPrice", rs.getDouble("maxPrice"));
+
 				jsonObject.put("volume", rs.getDouble("volume"));
 				jsonObject.put("turnover", rs.getDouble("turnover"));
 				jsonObject.put("turnoverRate", rs.getDouble("turnoverRate"));
-//				System.out.println(jsonObject.toString());
 				quotes.add(jsonObject);
 			}
-//			Collections.reverse(quotes);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return quotes;
+	}
+
+	public static JSONObject getLatestQuoteByStockId(String stockId, int count, Connection con) {
+
+		String sql = "select * from (select * from quote where stockId='" + stockId + "') a order by tradeDate desc limit " + count;
+		PreparedStatement ps = null;
+		JSONObject jsonObject = null;
+		try {
+			ps = con.prepareStatement(sql);
+			ResultSet rs = ps.executeQuery();
+
+			if (rs.next()) {
+				jsonObject = new JSONObject();
+				jsonObject.put("tradeDate", rs.getString("tradeDate"));
+				jsonObject.put("stockId", rs.getString("stockId"));
+				jsonObject.put("stockName", rs.getString("stockName"));
+				jsonObject.put("openPrice", rs.getDouble("openPrice"));
+
+				jsonObject.put("closePrice", rs.getDouble("closePrice"));
+				jsonObject.put("addPrice", rs.getDouble("addPrice"));
+				jsonObject.put("addRate", rs.getDouble("addRate"));
+				jsonObject.put("minPrice", rs.getDouble("minPrice"));
+				jsonObject.put("maxPrice", rs.getDouble("maxPrice"));
+				jsonObject.put("volume", rs.getDouble("volume"));
+				jsonObject.put("turnover", rs.getDouble("turnover"));
+				jsonObject.put("turnoverRate", rs.getDouble("turnoverRate"));
+
+				jsonObject.put("dea", rs.getDouble("dea"));
+				jsonObject.put("macd", rs.getDouble("macd"));
+				jsonObject.put("dif", rs.getDouble("dif"));
+				jsonObject.put("k", rs.getDouble("k"));
+				jsonObject.put("d", rs.getDouble("d"));
+				jsonObject.put("j", rs.getDouble("j"));
+
+				jsonObject.put("ma5", rs.getDouble("ma5"));
+				jsonObject.put("ma10", rs.getDouble("ma10"));
+				jsonObject.put("ma20", rs.getDouble("ma20"));
+				jsonObject.put("ma30", rs.getDouble("ma30"));
+				jsonObject.put("ma60", rs.getDouble("ma60"));
+				jsonObject.put("ma120", rs.getDouble("ma120"));
+
+				jsonObject.put("upper", rs.getDouble("upper"));
+				jsonObject.put("lower", rs.getDouble("lower"));
+				jsonObject.put("ene", rs.getDouble("ene"));
+				jsonObject.put("cci", rs.getDouble("cci"));
+				jsonObject.put("ema12", rs.getDouble("ema12"));
+				jsonObject.put("ema26", rs.getDouble("ema26"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return jsonObject;
 	}
 
 
