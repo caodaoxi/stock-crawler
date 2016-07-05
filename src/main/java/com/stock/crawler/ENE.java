@@ -1,14 +1,29 @@
 package com.stock.crawler;
 
+import com.stock.crawler.utils.DBUtils;
+import org.joda.time.DateTime;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Connection;
+import java.util.*;
 
 /**
  * Created by caodaoxi on 16-6-19.
  */
 public class ENE {
+
+    private Connection con = null;
+
+
+    private Map<String, List<JSONObject>> quotes= new HashMap<String, List<JSONObject>>();
+
+    public ENE() {
+
+    }
+
+    public ENE(Connection con) {
+        this.con = con;
+    }
 
     public void getENE(List<JSONObject> arrays, int n, int m1, int m2) {
         double upper = 0.00;
@@ -47,5 +62,23 @@ public class ENE {
             }
         }
         return Math.rint((total/n)*1000)/1000;
+    }
+
+
+    public JSONObject getTodayENE(JSONObject quote) {
+        String stockId = quote.getString("stockId");
+
+        List<JSONObject> yestodayQuotes = quotes.get(stockId);
+        String yesterday = new DateTime().plusDays(-1).toString("yyyy-MM-dd");
+        if (yestodayQuotes == null) {
+
+            yestodayQuotes = DBUtils.getLatestQuoteByStockId(stockId, 15, yesterday, con);
+            quotes.put(stockId, yestodayQuotes);
+        }
+        if (yestodayQuotes == null || yestodayQuotes.size() == 0) return null;
+        Collections.reverse(yestodayQuotes);
+        yestodayQuotes.add(quote);
+        getENE(yestodayQuotes, 10, 11, 9);
+        return yestodayQuotes.remove(yestodayQuotes.size() - 1);
     }
 }

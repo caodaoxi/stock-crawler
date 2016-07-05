@@ -1,13 +1,32 @@
 package com.stock.crawler;
 
+import com.stock.crawler.utils.DBUtils;
+import org.joda.time.DateTime;
 import org.json.JSONObject;
 
+import java.sql.Connection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by caodaoxi on 16-6-28.
  */
 public class CCI {
+
+    private Connection con = null;
+
+
+    private Map<String, List<JSONObject>> quotes= new HashMap<String, List<JSONObject>>();
+
+    public CCI() {
+
+    }
+
+    public CCI(Connection con) {
+        this.con = con;
+    }
 
     public double getCCI(List<JSONObject> objectList , int n) {
         if(objectList == null || objectList.size() < n) return -1000;
@@ -53,5 +72,23 @@ public class CCI {
             count++;
         }
         return sum/count;
+    }
+
+    public JSONObject getTodayCCI(JSONObject quote) {
+        String stockId = quote.getString("stockId");
+
+        List<JSONObject> yestodayQuotes = quotes.get(stockId);
+
+        String yesterday = new DateTime().plusDays(-1).toString("yyyy-MM-dd");
+
+        if (yestodayQuotes == null) {
+            yestodayQuotes = DBUtils.getLatestQuoteByStockId(stockId, 15, yesterday, con);
+            quotes.put(stockId, yestodayQuotes);
+        }
+        if (yestodayQuotes == null || yestodayQuotes.size() == 0) return null;
+        Collections.reverse(yestodayQuotes);
+        yestodayQuotes.add(quote);
+        getCCIS(yestodayQuotes, 14);
+        return yestodayQuotes.remove(yestodayQuotes.size() - 1);
     }
 }

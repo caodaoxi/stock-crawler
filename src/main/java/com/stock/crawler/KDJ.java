@@ -2,13 +2,11 @@ package com.stock.crawler;
 
 
 import com.stock.crawler.utils.DBUtils;
+import org.joda.time.DateTime;
 import org.json.JSONObject;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by caodaoxi on 16-6-18.
@@ -130,13 +128,14 @@ public class KDJ {
         String stockId = quote.getString("stockId");
 
         List<JSONObject> yestodayQuotes = quotes.get(stockId);
-
+        String yesterday = new DateTime().plusDays(-1).toString("yyyy-MM-dd");
         if (yestodayQuotes == null) {
 
-            yestodayQuotes = DBUtils.getLatestQuoteByStockId(stockId, 12, con);
+            yestodayQuotes = DBUtils.getLatestQuoteByStockId(stockId, 90, yesterday, con);
             quotes.put(stockId, yestodayQuotes);
         }
         if (yestodayQuotes == null || yestodayQuotes.size() == 0) return null;
+        Collections.reverse(yestodayQuotes);
         yestodayQuotes.add(quote);
         getKDJ(yestodayQuotes);
         return yestodayQuotes.remove(yestodayQuotes.size() - 1);

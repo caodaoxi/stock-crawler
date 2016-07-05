@@ -87,8 +87,14 @@ public class MACD {
     public void getTodayMACD(JSONObject quote) {
         String stockId = quote.getString("stockId");
         JSONObject yestodayQuote = quotes.get(stockId);
+        String yesterday = new DateTime().plusDays(-1).toString("yyyy-MM-dd");
         if (yestodayQuote == null) {
-            yestodayQuote = DBUtils.getLatestQuoteByStockId(stockId, 1, con).get(0);
+            List<JSONObject> yestodayQuotes = DBUtils.getLatestQuoteByStockId(stockId, 1, yesterday, con);
+            if(yestodayQuotes!=null && yestodayQuotes.size() > 0) {
+                yestodayQuote = yestodayQuotes.get(0);
+            } else {
+                return;
+            }
             quotes.put(stockId, quote);
         }
         if (yestodayQuote == null) return;

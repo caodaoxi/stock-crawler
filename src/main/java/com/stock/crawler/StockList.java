@@ -45,7 +45,6 @@ public class StockList {
 //            crawlerStockDetail(stock);
 //        }
         String currenDate = new DateTime().toString("yyyy-MM-dd");
-        currenDate = "2016-06-30";
         Connection con = null;
         try {
             Configuration.config();
@@ -53,13 +52,13 @@ public class StockList {
             con = DBPoolContext.getInstance().open();
             List<JSONObject> quotes = null;
             List<Double> closePrices = null;
-            MACD macd = new MACD(con);
-//
-            JSONObject quote = new JSONObject();
-            quote.put("stockId", "600030");
-            quote.put("closePrice", 16.13);
-            macd.getTodayMACD(quote);
-            System.out.println(quote.toString());
+//            MACD macd = new MACD(con);
+////
+//            JSONObject quote = new JSONObject();
+//            quote.put("stockId", "600030");
+//            quote.put("closePrice", 16.13);
+//            macd.getTodayMACD(quote);
+//            System.out.println(quote.toString());
             for(Stock stock : stockList) {
                 if (stock.getStockId().startsWith("30") || stock.getStockId().startsWith("60")  || stock.getStockId().startsWith("00")) {
 //                    closePrices = DBUtils.getClosePrice(stock.getStockId(), 10000, con);
@@ -71,14 +70,17 @@ public class StockList {
 //                    if((macd.get("DIF") >= 0 || macd.get("DEA") >= 0) && macd.get("DIF") >= macd.get("DEA")){
 //                        System.out.println("stockId : " + stock.getStockId() + ", DIF : " + macd.get("DIF") + ", DEA : " + macd.get("DEA") + ", MACD : " + macd.get("MACD"));
 //                    }
-//                    quotes = DBUtils.getQuoteByStockId(stock.getStockId(), 100000, con);
+                    quotes = DBUtils.getQuoteByStockId(stock.getStockId(), 100000, con);
 //                    CCI cci = new CCI();
 //                    cci.getCCIS(quotes, 14);
 //                    DBUtils.updateCCI(quotes, con);
 //                    System.out.println(stock.getStockId());
 //                    KDJ kdj = new KDJ();
-//
 //                    kdj.getKDJ(quotes);
+//                    JSONObject quote = new JSONObject();
+//                    quote.put("stockId", stock.getStockId());
+//                    quote.put("stockId", stock.getStockId());
+
 //                    DBUtils.updateKDJ(quotes, con);
 //                    quotes = DBUtils.getQuoteByStockId(stock.getStockId(), 100000, con);
 //                      QuotaUtils quotaUtils = new QuotaUtils();
