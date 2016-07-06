@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.quartz.*;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -21,7 +22,7 @@ import java.util.List;
 /**
  * Created by caodaoxi on 16-7-5.
  */
-public class Crawler {
+public class CrawlerJob implements Job {
 
     public static void main(String[] args) throws InterruptedException {
         crawlerStockDetailList();
@@ -42,10 +43,12 @@ public class Crawler {
             int i = 0;
             JSONObject jsonObject = null;
             Connection con = getConnection();
-            MACD macd = new MACD(con);
-            KDJ kdj = new KDJ(con);
-            ENE ene = new ENE(con);
-            CCI cci = new CCI(con);
+//            MACD macd = new MACD(con);
+//            KDJ kdj = new KDJ(con);
+//            ENE ene = new ENE(con);
+//            CCI cci = new CCI(con);
+//            MA ma = new MA(con);
+            Core core = new Core(con);
             while (iter.hasNext()) {
 
                 line = iter.next().toString().replace(",", "\t");
@@ -75,10 +78,17 @@ public class Crawler {
                     jsonObject.put("turnoverRate", Double.parseDouble(fields[23].replace("%", "")));
                     if(Double.parseDouble(fields[9]) == 0) continue;
                     i++;
-                    macd.getTodayMACD(jsonObject);
-                    kdj.getTodayKDJ(jsonObject);
-                    ene.getTodayENE(jsonObject);
-                    cci.getTodayCCI(jsonObject);
+//                    core.getCCI(jsonObject);
+//                    core.getENE(jsonObject);
+//                    core.getKDJ(jsonObject);
+//                    core.getMA(jsonObject);
+//                    core.getMACD(jsonObject);
+//                    macd.getTodayMACD(jsonObject);
+//                    kdj.getTodayKDJ(jsonObject);
+//                    ene.getTodayENE(jsonObject);
+//                    cci.getTodayCCI(jsonObject);
+//                    ma.getTodayMA(jsonObject);
+                    core.getAllQuota(jsonObject);
                     System.out.println(jsonObject.toString());
 //                    Thread.sleep(10);
                 } else {
@@ -102,5 +112,13 @@ public class Crawler {
             e.printStackTrace();
         }
         return con;
+    }
+
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        try {
+            crawlerStockDetailList();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
