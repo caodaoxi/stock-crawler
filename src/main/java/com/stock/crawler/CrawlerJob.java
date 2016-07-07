@@ -24,6 +24,7 @@ import java.util.List;
  */
 public class CrawlerJob implements Job {
 
+
     public static void main(String[] args) throws InterruptedException {
         crawlerStockDetailList();
     }
