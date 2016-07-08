@@ -91,7 +91,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.stock.crawler.StockList</mainClass>
+                            <mainClass>com.stock.quota.StockList</mainClass>
                         </manifest>
                     </archive>
                     <encoding>UTF8</encoding>
